@@ -38,6 +38,10 @@ where (m) is not specified all files will be kept as is.
     ├── index.html - Boostrap for your Ember app. (m)
     └── router.js - Ember routes. (m)
 
+Thanks
+------------
+You all know who you are. I will update this at some stage *hugs*
+
 
 Todo
 -------------
