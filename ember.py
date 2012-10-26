@@ -105,7 +105,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
         Create the minispade wrapper for 'file'
 
         output is:
-        minispade.register('<name of file>', function(require){
+        minispade.register('<name of file>', function(){
             //contents of file
         });
 
@@ -131,7 +131,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
             else:
                 file_contents.append('      ' + line.rstrip())
 
-        string = "minispade.register('%s', function(require){\n"
+        string = "minispade.register('%s', function(){\n"
         string += "%s%s\n"
         if require_path == 'templates':
             string += "  );\n"
@@ -153,8 +153,8 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
         string = "minispade.register('main', function(require){\n"
 
         for file in self.boostrap_files:
-            string += "    require('%s');\n" % file
-
+            logging.info('Adding %r to boostrap' % file)
+            string += "    minispade.require('%s');\n" % file
         string += "\n"
         string += "    App.initialize();\n"
         string += "});"
