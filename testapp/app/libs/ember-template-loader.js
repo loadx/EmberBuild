@@ -1,4 +1,5 @@
-var get = Ember.get, fmt = Ember.String.fmt;
+var get = Ember.get;
+var template_path = 'templates'
 
 Ember.View.reopen({
   templateForName: function(name, type) {
@@ -8,10 +9,9 @@ Ember.View.reopen({
         template = get(templates, name);
 
     if (!template) {
-      try {
-        template = require(name);
-      } catch (e) {
-        throw new Ember.Error(fmt('%@ - Unable to find %@ "%@".', [this, type, name]));
+      template = minispade.require(template_path + '/' + name);
+      if (!template) {
+        template = this._super(name, type);
       }
     }
 
