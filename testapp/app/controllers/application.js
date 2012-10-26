@@ -1,4 +1,4 @@
-require('core');
+minispade.require('core');
 
 App.ApplicationController = Ember.Controller.extend({
 });
