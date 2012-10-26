@@ -1,12 +1,14 @@
-import os
-import json
 import glob
+import json
 import logging
+import os
+import time
 from shutil import copyfile
 
 logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
 
 
+class EmberBuild():
     LIBS_PATH = 'libs'
     TEMPLATES_PATH = 'templates'
     COMPILE_PATH = '.compiled'
@@ -26,6 +28,23 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
         except IOError:
             logging.error('Could not create %s build file', self.build_file)
             return
+
+    def timed(method):
+        def timed(*args, **kw):
+            """
+            Calculate how long the function takes
+            """
+            ts = time.time() * 1000
+            result = method(*args, **kw)
+            te = time.time() * 1000
+
+            if method.__name__ == 'generate_bootstrap':
+                args[0].curr_file = 'boostrap'
+
+            logging.debug('Built %r in %2.2f milliseconds' % (args[0].curr_file, te - ts))
+            return result
+
+        return timed
 
     def build_libs(self):
         """
@@ -66,6 +85,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
         self.build_libs()
         self.build_app_base()
 
+        # copy minispade to compiled folder
         try:
             minispade_folder = os.path.join(self.app_path, self.LIBS_PATH)
             compiled_folder = os.path.join(self.app_path, self.COMPILE_PATH)
@@ -100,6 +120,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
             except (IOError, AttributeError):
                 logging.error('Failed when writing compiled %s to %s' % (file, self.build_file))
 
+    @timed
     def build_minispade_file(self, file, require_path):
         """
         Create the minispade wrapper for 'file'
@@ -145,16 +166,18 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
         file_buff.close()
         return (string) % (require_name, prepend_string, delimeter.join(file_contents))
 
+    @timed
     def generate_bootstrap(self):
         """
         Creates the entry point for the Ember application.
         loads in all controllers, models and views
         """
-        string = "minispade.register('main', function(require){\n"
+        string = "minispade.register('main', function(){\n"
 
         for file in self.boostrap_files:
             logging.info('Adding %r to boostrap' % file)
             string += "    minispade.require('%s');\n" % file
+
         string += "\n"
         string += "    App.initialize();\n"
         string += "});"
