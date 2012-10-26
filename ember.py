@@ -7,6 +7,14 @@ from shutil import copyfile
 
 logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
 
+def human_readable_size(size):
+    suffixes = [("B", 2 ** 10), ("K", 2 ** 20), ("M", 2 ** 30), ("G", 2 ** 40), ("T", 2 ** 50)]
+    for suf, lim in suffixes:
+        if size > lim:
+            continue
+        else:
+            return round(size / float(lim / 2 ** 10), 2).__str__() + suf
+
 
 class EmberBuild():
     LIBS_PATH = 'libs'
@@ -97,6 +105,7 @@ class EmberBuild():
 
         # finishing touch generate the bootstrap file
         self.generate_bootstrap()
+        logging.warning('App %r compiled with size of %s' % (self.app_path, human_readable_size(float(self.build_file.tell()))))
         self.build_file.close()
 
     def build_dir(self, folder_path, type):
