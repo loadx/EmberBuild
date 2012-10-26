@@ -54,12 +54,13 @@ where (m) is not specified all files will be kept as is.
 
 Changelog
 -------------
-26 Oct 2012
-    * Added command line builder
-    * Added timing and logging functionalities to help debugging
-    * Updated minispade and template-loader to be inline with rake-pipeline
-    * Removed template/ path from template loader. Now directly injected to Ember.TEMPLATES[]
-    * require() renamed to minispade.require()
+|Date|Log|
+|--------------|----------------------------------------------------------------------------------------|
+|**26 Oct 2012**   | Added command line builder                                                             |
+|              |    Added timing and logging functionalities to help debugging                          |
+|              | Updated minispade and template-loader to be inline with rake-pipeline                  |
+|              | Removed template/ path from template loader. Now directly injected to Ember.TEMPLATES[]|
+|              | require() renamed to minispade.require()                                               |
 
 
 
