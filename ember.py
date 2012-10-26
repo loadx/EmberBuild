@@ -52,7 +52,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
 
             if item == '*.js':
                 # jump back a folder
-                path = path.replace('/app', '')
+                path = os.path.abspath(os.path.join(path, '../../', item))
                 self.build_dir(path, '')
             else:
                 path += '/*.js'
