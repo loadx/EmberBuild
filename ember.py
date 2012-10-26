@@ -125,7 +125,7 @@ logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
 
                 # escape HTML to be a valid string and wrap in handlebars
                 # use concatentation formatting for templates
-                prepend_string = '  return Ember.Handlebars.compile(\n'
+                prepend_string = '  Ember.TEMPLATES["%s"] = Ember.Handlebars.compile(\n' % template_name
                 file_contents.append('      ' + json.dumps(line.rstrip()))
                 delimeter = ' +\n'
             else:
