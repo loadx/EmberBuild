@@ -11,8 +11,22 @@ EmberBuild will simply keep a list of all controllers, models and views and incl
 
 Running
 -------
-    please see sample.py
-    $ python sample.py
+    $ ember_build.py /path/to/project
+
+    You can also use this as a library in your own project just include ember.py. (see ember_build for usage)
+
+
+Commandline flags
+-------
+    usage: ember_build.py [-h] [-t dev] [-v] project
+
+    positional arguments:
+        project             Path to Ember project you want to compile
+
+    optional arguments:
+        -h, --help          show this help message and exit
+        -t dev, --type dev  Change Ember build type (live or dev)
+        -v                  Change output verbosity (0-2) defaults to 0
 
     In your browser visit index.html after you've ran the build process.
 
@@ -20,7 +34,6 @@ Running
 
 App Structure
 -------------
-
 where (m) is not specified all files will be kept as is.
 (m) indicates that the file is modularized during building.
 
