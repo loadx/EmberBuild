@@ -1,9 +1,12 @@
 import os
 import json
 import glob
+import logging
 from shutil import copyfile
 
-class EmberBuild():
+logging.basicConfig(level=0, format='[%(levelname)s] %(message)s')
+
+
     LIBS_PATH = 'libs'
     TEMPLATES_PATH = 'templates'
     COMPILE_PATH = '.compiled'
@@ -19,8 +22,9 @@ class EmberBuild():
             # flag to enable/disable minification and gzip
             self.production_build = True
         try:
-            self.build_file = open(self.build_file, 'w')
+            self.build_file = open(self.build_file, 'w+')
         except IOError:
+            logging.error('Could not create %s build file', self.build_file)
             return
 
     def build_libs(self):
@@ -62,11 +66,18 @@ class EmberBuild():
         self.build_libs()
         self.build_app_base()
 
-        # copy minispade to compiled folder
-        copyfile(os.path.join(self.app_path, self.LIBS_PATH, 'minispade.js'), os.path.join(self.app_path, self.COMPILE_PATH, 'minispade.js'))
+        try:
+            minispade_folder = os.path.join(self.app_path, self.LIBS_PATH)
+            compiled_folder = os.path.join(self.app_path, self.COMPILE_PATH)
+            copyfile(os.path.join(minispade_folder, 'minispade.js'), os.path.join(compiled_folder, 'minispade.js'))
+        except IOError:
+            logging.error('unable to copy minispade.js from %s to %s' % (minispade_folder, compiled_folder))
+            # halt the build process
+            return False
 
         # finishing touch generate the bootstrap file
         self.generate_bootstrap()
+        self.build_file.close()
 
     def build_dir(self, folder_path, type):
         """
@@ -80,13 +91,14 @@ class EmberBuild():
             files = folder_path
 
         for file in files:
-            print "%s %s" % ('[building]', file)
+            logging.info("Building %r" % file)
+            self.curr_file = file
 
             try:
                 self.build_file.writelines(self.build_minispade_file(file, type))
                 self.build_file.writelines("\n")
-            except:
-                pass
+            except (IOError, AttributeError):
+                logging.error('Failed when writing compiled %s to %s' % (file, self.build_file))
 
     def build_minispade_file(self, file, require_path):
         """
@@ -108,7 +120,8 @@ class EmberBuild():
 
         for line in file_buff:
             if require_path == 'templates':
-                require_name = os.path.join(require_path, os.path.basename(file).replace('.handlebars', ''))
+                template_name = os.path.basename(file).replace('.handlebars', '')
+                require_name = os.path.join(require_path, template_name)
 
                 # escape HTML to be a valid string and wrap in handlebars
                 # use concatentation formatting for templates
@@ -145,4 +158,8 @@ class EmberBuild():
         string += "\n"
         string += "    App.initialize();\n"
         string += "});"
-        self.build_file.writelines(string)
+
+        try:
+            self.build_file.writelines(string)
+        except (AttributeError, IOError):
+            logging.error('Failed when writing compiled boostrap to %s' % self.build_file)
