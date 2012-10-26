@@ -1,60 +1,67 @@
-(function(window) {
-  function requireWrapper(self) {
-    var require = function() {
-      return self.require.apply(self, arguments);
-    };
-    require.exists = function() {
-      return self.exists.apply(self, arguments);
-    };
-    return require;
-  }
+/*jshint evil:true*/
 
-  var Minispade = function() {
-    this.modules = {};
-    this.loaded = {};
-    this.exports = {};
-    return this;
-  };
+if (typeof document !== "undefined") {
+  (function() {
+    minispade = {
+      root: null,
+      modules: {},
+      loaded: {},
 
-  Minispade.prototype.require = function(name) {
-    if (!this.loaded[name]) {
-      var module = this.modules[name];
-      if (module) {
-        var require = requireWrapper(this);
-        try {
-          this.exports[name] = module.call(window, require);
-          return this.exports[name];
-        } finally {
-          this.loaded[name] = true;
+      globalEval: function(data) {
+        if ( data ) {
+          // We use execScript on Internet Explorer
+          // We use an anonymous function so that context is window
+          // rather than jQuery in Firefox
+          ( window.execScript || function( data ) {
+            window[ "eval" ].call( window, data );
+          } )( data );
         }
-      } else {
-        throw "The module '" + name + "' has not been registered";
+      },
+
+      requireModule: function(name) {
+        var loaded = minispade.loaded[name];
+        var mod = minispade.modules[name];
+
+        if (!loaded) {
+          if (mod) {
+            minispade.loaded[name] = true;
+
+            if (typeof mod === "string") {
+              this.globalEval(mod);
+            } else {
+              mod();
+            }
+          } else {
+            if (minispade.root && name.substr(0,minispade.root.length) !== minispade.root) {
+              return minispade.requireModule(minispade.root+name);
+            } else {
+              throw "The module '" + name + "' could not be found";
+            }
+          }
+        }
+
+        return loaded;
+      },
+
+      requireAll: function(regex) {
+        for (var module in this.modules) {
+          if (!this.modules.hasOwnProperty(module)) { continue; }
+          if (regex && !regex.test(module)) { continue; }
+          minispade.requireModule(module);
+        }
+      },
+
+      require: function(path) {
+        if (typeof path === 'string') {
+          minispade.requireModule(path);
+        } else {
+          minispade.requireAll(path);
+        }
+      },
+
+      register: function(name, callback) {
+        minispade.modules[name] = callback;
       }
-    }
-    return this.exports[name];
-  };
-
-  Minispade.prototype.register = function(name, module) {
-    if (this.exists(name)) {
-      throw "The module '" + name + "' has already been registered";
-    }
-    this.modules[name] = module;
-    return true;
-  };
-
-  Minispade.prototype.unregister = function(name) {
-    var loaded = !!this.loaded[name];
-    if (loaded) {
-      delete this.exports[name];
-      delete this.modules[name];
-      delete this.loaded[name];
-    }
-    return loaded;
-  };
-
-  Minispade.prototype.exists = function(name) {
-    return name in this.modules;
-  };
-
-  window.minispade = new Minispade();
-})(this);
+    };
+  })();
+}
